@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #RMS Dec 2016
 #Class for user interaction with Alaska section GUI
+import os
 
 class PointBrowser:
 
@@ -8,8 +9,11 @@ class PointBrowser:
 
         self.dragging = None
         self.line = None
+        self.profiledraw = False
 
     def addobjs(self, canvasobj, mapobj):
+
+      '''Attatch map objects so that we can draw on them/add text etc'''
 
       self.mapobj = mapobj
       self.canvasobj = canvasobj
@@ -25,29 +29,54 @@ class PointBrowser:
 
         print 'Dragging at %g %g' %(lon,lat)
 
-        if self.line:
-        	self.line[0].remove()
-        	self.linepoints[0].remove()
+      if self.profiledraw == True:
 
-        lats = [self.startlat,lat]
-        lons = [self.startlon,lon]
-        xevent,yevent = self.mapobj(lons,lats)
+        if self.dragging:
 
-        self.line = self.mapobj.plot(xevent,yevent,'r-',linewidth=1,alpha=0.6)
-        self.linepoints = self.mapobj.plot(xevent,yevent,'k.',linewidth=1,alpha=0.6)
-        self.canvasobj.draw()
+          if self.line:
+          	self.line[0].remove()
+          	self.linepoints[0].remove()
+
+          lats = [self.startlat,lat]
+          lons = [self.startlon,lon]
+          xevent,yevent = self.mapobj(lons,lats)
+
+          self.line = self.mapobj.plot(xevent,yevent,'b-',linewidth=1,alpha=0.6)
+          self.linepoints = self.mapobj.plot(xevent,yevent,'k.',linewidth=1,alpha=0.6)
+          self.canvasobj.draw()
 
     def returnlocation(self):
 
-    	'''Return the start and end coordinates of the profile'''
+      '''Return the start and end coordinates of the profile'''
 
-    	#This is where we need to call the profile plotting script
+      #This is where we need to call the profile plotting script
 
-    	print 'Making profile!'
+      if (self.profiledraw == True) or (self.line):
+
+        print '------------------------------'
+        print 'Start: %g/%g' %(self.startlat,self.startlon)
+        print 'End: %g/%g' %(self.endlat,self.endlon)
+        print '------------------------------'
+
+        #User to confirm that a profile is to be made 
+        userprof = str(raw_input('Continue to make profile? [Y/N]: '))
+
+        if userprof == 'Y':
+
+          print 'Generating profile'
+          os.system('extraction/SectionExtractor.sh try.sim.kernel.P.b13.75.50.iasp 4 P %g %g %g %g 600 %g' %(self.startlat,self.endlat,self.startlon,self.endlon,4.0))
+
+        else:
+
+          print 'No profile to be generated'
+
+      else:
+
+        print 'Need to initiate profile drawing before a slice can be made!'
 
     def releasepick(self, event):
 
-      '''define what happens when the user releases the cursor'''
+      '''Define what happens when the user releases the cursor'''
 
       lon = event.xdata
       lat = event.ydata
@@ -59,10 +88,23 @@ class PointBrowser:
 
         self.dragging = None
 
+    def startdrawing(self):
+
+      '''Set the drawing option to True, so the user can start drawing lines on the map'''
+
+      self.profiledraw = True
+
+
+    def stopdrawing(self):
+
+      '''Set the drawing option to False, so the user can stop drawing lines on the map'''
+
+      self.profiledraw = False 
+
 
     def onpick(self, event):
 
-      '''define what happens when the user presses the cursor'''
+      '''Define what happens when the user presses the cursor'''
 
       # the click locations
 
