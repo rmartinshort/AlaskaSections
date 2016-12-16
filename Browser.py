@@ -18,6 +18,18 @@ class PointBrowser:
       self.mapobj = mapobj
       self.canvasobj = canvasobj
 
+    def addlabel(self,label):
+
+      '''Add a gui label object so that is can be updated by user actions'''
+
+      self.labelobj = label
+
+    def adddataset(self,datasetpath):
+
+      '''Add datset objects so that they can be plotted. This dataset must be within the Data directory'''
+
+      self.datasetpth = datasetpath
+
     def motion(self,event):
 
       '''Define what happens when the user moves the mouse over the canvas'''
@@ -25,13 +37,12 @@ class PointBrowser:
       lon = event.xdata
       lat = event.ydata
 
-      if self.dragging:
-
-        print 'Dragging at %g %g' %(lon,lat)
-
       if self.profiledraw == True:
 
         if self.dragging:
+
+          #Update the section indicator label
+          self.labelobj.set('Section: Start: %.2f/%.2f End: %.2f/%.2f' %(self.startlon,self.startlat,lon,lat))
 
           if self.line:
           	self.line[0].remove()
@@ -64,7 +75,7 @@ class PointBrowser:
         if userprof == 'Y':
 
           print 'Generating profile'
-          os.system('extraction/SectionExtractor.sh try.sim.kernel.P.b13.75.50.iasp 4 P %g %g %g %g 600 %g' %(self.startlat,self.endlat,self.startlon,self.endlon,4.0))
+          os.system('extraction/SectionExtractor.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
 
         else:
 
@@ -93,6 +104,7 @@ class PointBrowser:
       '''Set the drawing option to True, so the user can start drawing lines on the map'''
 
       self.profiledraw = True
+      self.labelobj.set('Drawing!')
 
 
     def stopdrawing(self):
@@ -100,6 +112,7 @@ class PointBrowser:
       '''Set the drawing option to False, so the user can stop drawing lines on the map'''
 
       self.profiledraw = False 
+      self.labelobj.set('Not drawing')
 
 
     def onpick(self, event):

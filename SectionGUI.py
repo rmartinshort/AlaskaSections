@@ -28,6 +28,12 @@ class SectionGUI(Frame):
 
 	def __init__(self,parent,width=1200,height=600,**options):
 
+        
+        #The user must specify these dataset names - the map .grd file to be displayed in the GUI and the
+        #tomography output text file that get sliced
+		self.mapgrdfile = "VEL.SLICE.150.try.sim.kernel.P.b13.75.50.iasp.grd"
+		self.dataset = "try.sim.kernel.P.b13.75.50.iasp"
+
 		#-----------------------------------
 
 		#Set up the Tkinter GUI frame
@@ -80,7 +86,7 @@ class SectionGUI(Frame):
 		self.map = Basemap(ax=self.a,lat_0=62.5,lon_0=213,resolution ='l',llcrnrlon=self.minlon,llcrnrlat=self.minlat,urcrnrlon=self.maxlon,urcrnrlat=self.maxlat)
 
 		#Display netCDF of some depth slice
-		self.DisplaynetCDF('Data/VEL.SLICE.150.try.sim.kernel.P.b13.75.50.iasp.grd','P vel anomaly at 150km [%]',[-3,3],plt.cm.RdBu)
+		self.DisplaynetCDF('Data/%s' %self.mapgrdfile,'P vel anomaly at 150km [%]',[-3,3],plt.cm.RdBu)
 
 		#Basic setup - just fill the continents
 		#self.map.fillcontinents()
@@ -101,13 +107,13 @@ class SectionGUI(Frame):
 		self.volcanoes = self.map.plot(xvolcanoes,yvolcanoes,'r^',label='Volcanoes',markersize=4,alpha=0.4)
 
 		#-----------------------------------------
-		lonsTA, lonsAK, latsTA, latsAK  = EDD.getseismometerocations()
+		#lonsTA, lonsAK, latsTA, latsAK  = EDD.getseismometerocations()
 
-		xstationsTA,ystationsTA = self.map(lonsTA,latsTA)
-		xstationsAK,ystationsAK = self.map(lonsAK,latsAK)
+		#xstationsTA,ystationsTA = self.map(lonsTA,latsTA)
+		#xstationsAK,ystationsAK = self.map(lonsAK,latsAK)
 
-		self.AKstations = self.map.plot(xstationsAK,ystationsAK,'b^',label='AK',markersize=2,alpha=0.5)
-		self.TAstations = self.map.plot(xstationsTA,ystationsTA,'g^',label='TA',markersize=2,alpha=0.5)
+		#self.AKstations = self.map.plot(xstationsAK,ystationsAK,'b^',label='AK',markersize=2,alpha=0.5)
+		#self.TAstations = self.map.plot(xstationsTA,ystationsTA,'g^',label='TA',markersize=2,alpha=0.5)
 
 		#Canvas setup
 		self.canvas = FigureCanvasTkAgg(self.f, self)
@@ -124,11 +130,29 @@ class SectionGUI(Frame):
 
 		parent.title("Alaska section mapper")
 
+		Browse.adddataset(self.dataset)
+
+		#Generate the options menu
+
+		self.Createmenubar(parent)
+
 	def SetElements(self):
 
 		'''Sets up the the GUI elements'''
 
 		Label(self,text='Section Mapper',bg='azure',height=2,pady=2,font='Helvetica 22 bold').grid(row=0,column=0,rowspan=2,columnspan=14,sticky=W+E+S+N)
+
+
+		# Add label that updates with the section coodinates
+		self.sectioninfo = StringVar()
+		Label(self,textvariable=self.sectioninfo,bg='white',height=2,padx=2,pady=2,font='Helvetica 10 bold').grid(row=0,column=12,columnspan=1,sticky=W+E+S+N)
+		self.sectioninfo.set('Not drawing')
+		Browse.addlabel(self.sectioninfo)
+
+		# Add label that updates with the section type
+		self.sectiontype = StringVar()
+		Label(self,textvariable=self.sectiontype,bg='white',height=1,padx=0,pady=0,font='Helvetica 10 bold').grid(row=1,column=12,columnspan=1,sticky=W+E+S+N)
+		self.sectiontype.set('Section type: GMT')
 
 		#Section creation buttons
 
@@ -186,6 +210,28 @@ class SectionGUI(Frame):
 		#create image of the .nc dataset
 		image = self.map.imshow(dat,cmap=colormap)
 		image.set_clim(bounds[0],bounds[1])
+
+	def Createmenubar(self,parent): 
+
+		'''Create the drop down menu: allows user to add data layers to the Alaska'''
+
+		menubar = Menu(self)
+		parent.config(menu=menubar)
+		filemenu = Menu(menubar,tearoff=0,font="Helvetica 16 bold") #insert a drop-down menu
+
+		submenu1 = Menu(filemenu)
+		submenu1.add_command(label='GMT sections')
+		submenu1.add_command(label='Python sections')
+		filemenu.add_cascade(label='Section options',menu=submenu1,underline=0)
+
+		filemenu.add_separator()
+
+		submenu2 = Menu(filemenu)
+		submenu2.add_command(label='Add instruments')
+		submenu2.add_command(label='Choose tomography file')
+		filemenu.add_cascade(label='Overlay options',menu=submenu2,underline=0) #add the drop down menu to the menu bar
+
+		menubar.add_cascade(label='Options',menu=filemenu)
 
 
 
