@@ -5,6 +5,7 @@
 print 'Importing modules ...'
 
 from Tkinter import *
+import tkFileDialog
 import numpy as np
 
 #Allow matplotlib to be used within a tkinter canvas
@@ -107,13 +108,8 @@ class SectionGUI(Frame):
 		self.volcanoes = self.map.plot(xvolcanoes,yvolcanoes,'r^',label='Volcanoes',markersize=4,alpha=0.4)
 
 		#-----------------------------------------
-		#lonsTA, lonsAK, latsTA, latsAK  = EDD.getseismometerocations()
-
-		#xstationsTA,ystationsTA = self.map(lonsTA,latsTA)
-		#xstationsAK,ystationsAK = self.map(lonsAK,latsAK)
-
-		#self.AKstations = self.map.plot(xstationsAK,ystationsAK,'b^',label='AK',markersize=2,alpha=0.5)
-		#self.TAstations = self.map.plot(xstationsTA,ystationsTA,'g^',label='TA',markersize=2,alpha=0.5)
+		self.plottingseismometers = False
+		#-----------------------------------------
 
 		#Canvas setup
 		self.canvas = FigureCanvasTkAgg(self.f, self)
@@ -129,6 +125,8 @@ class SectionGUI(Frame):
 		self.SetElements()
 
 		parent.title("Alaska section mapper")
+
+		#Add the chosen dataset to the browse object, so that it can be manipulated
 
 		Browse.adddataset(self.dataset)
 
@@ -149,10 +147,10 @@ class SectionGUI(Frame):
 		self.sectioninfo.set('Not drawing')
 		Browse.addlabel(self.sectioninfo)
 
-		# Add label that updates with the section type
+		# Add label that updates with the section type (GMT is default)
 		self.sectiontype = StringVar()
 		Label(self,textvariable=self.sectiontype,bg='white',height=1,padx=0,pady=0,font='Helvetica 10 bold').grid(row=1,column=12,columnspan=1,sticky=W+E+S+N)
-		self.sectiontype.set('Section type: GMT')
+		self.SetGMTSections()
 
 		#Section creation buttons
 
@@ -177,6 +175,40 @@ class SectionGUI(Frame):
 		'''Start drawing profiles'''
 
 		Browse.stopdrawing()
+
+	def SetPythonSections(self):
+
+		'''Set plotting options in python'''
+
+		self.plottype = 'Python'
+		self.sectiontype.set('Section type: Python')
+
+	def SetGMTSections(self):
+
+		'''Set plotting options in GMT'''
+
+		self.plottype = 'GMT'
+		self.sectiontype.set('Section type: GMT')
+
+	def Askfordataset(self):
+
+		'''Asks user for the name of a topography dataset to slice'''
+
+		print '--------------------------'
+		print 'Choose the 3D tomography file to extract slices from'
+		print '--------------------------'
+
+		filelocation = tkFileDialog.askopenfilename(initialdir='Data')
+		
+		self.olddataset = self.dataset
+		self.dataset = filelocation
+
+		print '\n------------------------\n'
+
+		print 'Now slicing dataset %s' %self.dataset
+		Browse.adddataset(self.dataset)
+
+		print '\n------------------------\n'
 
 	def DisplaynetCDF(self,dataset,label,bounds,colormap):
 
@@ -211,6 +243,28 @@ class SectionGUI(Frame):
 		image = self.map.imshow(dat,cmap=colormap)
 		image.set_clim(bounds[0],bounds[1])
 
+	def Plot_instruments(self):
+
+		'''Options for getting and plotting seismometer locations'''
+
+		#-------------------------------------------
+		if self.plottingseismometers == False:
+
+			lonsTA, lonsAK, latsTA, latsAK  = EDD.getseismometerocations()
+
+			xstationsTA,ystationsTA = self.map(lonsTA,latsTA)
+			xstationsAK,ystationsAK = self.map(lonsAK,latsAK)
+
+			self.AKstations = self.map.plot(xstationsAK,ystationsAK,'b^',label='AK',markersize=2,alpha=0.5)
+			self.TAstations = self.map.plot(xstationsTA,ystationsTA,'g^',label='TA',markersize=2,alpha=0.5)
+			self.canvas.draw()
+
+			self.plottingseismometers = True
+
+		else:
+
+			print 'Seismometers already plotted!'
+
 	def Createmenubar(self,parent): 
 
 		'''Create the drop down menu: allows user to add data layers to the Alaska'''
@@ -220,15 +274,15 @@ class SectionGUI(Frame):
 		filemenu = Menu(menubar,tearoff=0,font="Helvetica 16 bold") #insert a drop-down menu
 
 		submenu1 = Menu(filemenu)
-		submenu1.add_command(label='GMT sections')
-		submenu1.add_command(label='Python sections')
+		submenu1.add_command(label='GMT sections',command=self.SetGMTSections)
+		submenu1.add_command(label='Python sections',command=self.SetPythonSections)
 		filemenu.add_cascade(label='Section options',menu=submenu1,underline=0)
 
 		filemenu.add_separator()
 
 		submenu2 = Menu(filemenu)
-		submenu2.add_command(label='Add instruments')
-		submenu2.add_command(label='Choose tomography file')
+		submenu2.add_command(label='Add instruments',command=self.Plot_instruments)
+		submenu2.add_command(label='Choose tomography file',command=self.Askfordataset)
 		filemenu.add_cascade(label='Overlay options',menu=submenu2,underline=0) #add the drop down menu to the menu bar
 
 		menubar.add_cascade(label='Options',menu=filemenu)

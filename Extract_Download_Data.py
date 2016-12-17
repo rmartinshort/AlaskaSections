@@ -20,7 +20,7 @@ def getvolcanolocations():
 
 	print len(lines)
 
-	outfile = open('Alaska_volcanoes.dat','w')
+	outfile = open('Data/Alaska_volcanoes.dat','w')
 
 	vlons = []
 	vlats = []

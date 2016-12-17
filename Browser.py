@@ -28,7 +28,7 @@ class PointBrowser:
 
       '''Add datset objects so that they can be plotted. This dataset must be within the Data directory'''
 
-      self.datasetpth = datasetpath
+      self.datasetpath = datasetpath
 
     def motion(self,event):
 
@@ -75,6 +75,7 @@ class PointBrowser:
         if userprof == 'Y':
 
           print 'Generating profile'
+          print self.datasetpath 
           os.system('extraction/SectionExtractor.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
 
         else:
