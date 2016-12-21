@@ -8,8 +8,12 @@ class PointBrowser:
     def __init__(self, xs=None, ys=None):
 
         self.dragging = None
+        self.multilist = []
+        self.multi = None
         self.line = None
         self.profiledraw = False
+        self.singlesectionflag = True
+        self.multisectionflag = False
 
     def addobjs(self, canvasobj, mapobj):
 
@@ -45,8 +49,8 @@ class PointBrowser:
           self.labelobj.set('Section: Start: %.2f/%.2f End: %.2f/%.2f' %(self.startlon,self.startlat,lon,lat))
 
           if self.line:
-          	self.line[0].remove()
-          	self.linepoints[0].remove()
+            self.line[0].remove()
+            self.linepoints[0].remove()
 
           lats = [self.startlat,lat]
           lons = [self.startlon,lon]
@@ -100,6 +104,74 @@ class PointBrowser:
 
         self.dragging = None
 
+        if self.multi:
+
+          self.endlat = lat
+          self.endlon = lon
+
+          lats = [self.startlat,lat]
+          lons = [self.startlon,lon]
+          xevent,yevent = self.mapobj(lons,lats)
+
+          #Draw lines that do not get removed - for a multiple section cross section 
+
+          self.prevline = self.mapobj.plot(xevent,yevent,'b-',linewidth=1,alpha=0.6)
+          self.prevlinepoints = self.mapobj.plot(xevent,yevent,'k.',linewidth=1,alpha=0.6)
+          self.previous_lines.append(self.prevline)
+          self.previous_points.append(self.prevlinepoints)
+          self.canvasobj.draw()
+
+          #Add a list of the start and end coordinates to a list that records the section line
+
+          self.multilist.append([self.startlat,self.startlon,self.endlat,self.endlon])
+          self.startlat = self.endlat
+          self.startlon = self.endlon
+
+    def multirelease(self,event):
+
+      '''Define what happends when user presses a key - aim to stop the multi section drawing process'''
+
+      print 'You pressed %s' %event.key
+
+      if event.key == 'enter':
+
+        if self.prevline:
+
+          try:
+
+            for element in zip(self.previous_lines,self.previous_points):
+
+              element[0][0].remove()
+              element[1][0].remove()
+
+            #Remake the lines/points lists
+
+            self.previous_lines = []
+            self.previous_points = []
+
+          except:
+
+            print 'Something wrong with removing lines!'
+
+          self.canvasobj.draw()
+
+    def multisection(self):
+
+      '''Signal that the drawing option is of type multi'''
+
+      self.multisectionflag = True
+      self.singlesectionflag = False
+      self.previous_lines = []
+      self.previous_points = []
+
+    def singlesection(self):
+
+      '''Signal that the drawing option is of type multi'''
+
+      self.singlesectionflag = True
+      self.multisectionflag = False 
+
+
     def startdrawing(self):
 
       '''Set the drawing option to True, so the user can start drawing lines on the map'''
@@ -115,6 +187,13 @@ class PointBrowser:
       self.profiledraw = False 
       self.labelobj.set('Not drawing')
 
+      #Remove any existing lines
+
+      self.line[0].remove()
+      self.linepoints[0].remove()
+      self.line = None
+      self.canvasobj.draw()
+
 
     def onpick(self, event):
 
@@ -127,5 +206,10 @@ class PointBrowser:
 
       self.startlon = lon
       self.startlat = lat
-      self.dragging = True
+
+      if self.singlesectionflag == True:
+        self.dragging = True
+      elif self.multisectionflag == True:
+        self.dragging = True
+        self.multi = True
 

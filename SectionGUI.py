@@ -118,6 +118,7 @@ class SectionGUI(Frame):
 		self.f.canvas.mpl_connect('button_press_event',Browse.onpick)
 		self.f.canvas.mpl_connect('motion_notify_event', Browse.motion)
 		self.f.canvas.mpl_connect('button_release_event',Browse.releasepick)
+		self.f.canvas.mpl_connect('key_press_event',Browse.multirelease)
 
 		self.canvas.get_tk_widget().grid(row=1,sticky=W+S+N+E,columnspan=nocols,rowspan=norows)
 		self.canvas.show()
@@ -188,7 +189,24 @@ class SectionGUI(Frame):
 		'''Set plotting options in GMT'''
 
 		self.plottype = 'GMT'
-		self.sectiontype.set('Section type: GMT')
+		self.segments = 'Single'
+		self.sectiontype.set('Section type: GMT, %s' %self.segments)
+
+	def SetSingleSections(self):
+
+		'''Set plotting options to single sections'''
+
+		self.segments = 'Single'
+		self.sectiontype.set('Section type: %s, %s' %(self.plottype,self.segments))
+		Browse.singlesection()
+
+	def SetMultiSections(self):
+
+		'''Set plotting options to multi sections'''
+
+		self.segments = 'Multi'
+		self.sectiontype.set('Section type: %s, %s' %(self.plottype,self.segments))
+		Browse.multisection()
 
 	def Askfordataset(self):
 
@@ -276,6 +294,8 @@ class SectionGUI(Frame):
 		submenu1 = Menu(filemenu)
 		submenu1.add_command(label='GMT sections',command=self.SetGMTSections)
 		submenu1.add_command(label='Python sections',command=self.SetPythonSections)
+		submenu1.add_command(label='Multi-segment sections',command=self.SetMultiSections)
+		submenu1.add_command(label='Single-segment sections',command=self.SetSingleSections)
 		filemenu.add_cascade(label='Section options',menu=submenu1,underline=0)
 
 		filemenu.add_separator()
