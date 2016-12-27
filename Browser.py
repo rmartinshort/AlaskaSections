@@ -2,6 +2,8 @@
 #RMS Dec 2016
 #Class for user interaction with Alaska section GUI
 import os
+import sys
+import NetCDF_plotter as ncp
 
 class PointBrowser:
 
@@ -33,6 +35,13 @@ class PointBrowser:
       '''Add datset objects so that they can be plotted. This dataset must be within the Data directory'''
 
       self.datasetpath = datasetpath
+      
+    def addslicetype(self,slicetype):
+        
+      '''Add the slice type - python plotting or GMT plotting of the .grd file thy gets made by the slicing
+        tool '''
+        
+      self.slicetype = slicetype
 
     def motion(self,event):
 
@@ -80,7 +89,24 @@ class PointBrowser:
 
           print 'Generating profile'
           print self.datasetpath 
-          os.system('extraction/SectionExtractor.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
+          
+          if self.slicetype == "GMT":
+             os.system('extraction/SectionExtractor.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
+          elif self.slicetype ==  "Python":
+
+            #print self.startlat, self.startlon, self.endlat, self.endlon
+
+            os.system('extraction/ExtractionOnly.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,5.0))
+
+            #We are now in the 'Data' directory, so can immediately go ahead and plot the python slice
+            ncp.plotgrd('slice.grd','Quakesdepth.gmt.dat',self.startlat,self.startlon,self.endlat,self.endlon)
+
+            #Return to the directory above 'Data'
+            os.chdir('../')
+
+          else:
+              print 'Do not understand input slicetype'
+              sys.exit(1)
 
         else:
 
@@ -132,6 +158,7 @@ class PointBrowser:
       '''Define what happends when user presses a key - aim to stop the multi section drawing process'''
 
       print 'You pressed %s' %event.key
+      print 'Must press enter to remove lines drawn with multi-section tool selected'
 
       if event.key == 'enter':
 
