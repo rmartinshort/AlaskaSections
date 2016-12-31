@@ -96,13 +96,25 @@ class PointBrowser:
 
             #print self.startlat, self.startlon, self.endlat, self.endlon
 
-            os.system('extraction/ExtractionOnly.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,5.0))
+            os.system('extraction/ExtractionOnly.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,6.0))
 
             #We are now in the 'Data' directory, so can immediately go ahead and plot the python slice
-            ncp.plotgrd('slice.grd','Quakesdepth.gmt.dat',self.startlat,self.startlon,self.endlat,self.endlon)
+            f1, f2 = ncp.plotgrd('slice.grd','Quakesdepth.gmt.dat',self.startlat,self.startlon,self.endlat,self.endlon)
+
+            cwd = os.getcwd()
+            print cwd
 
             #Return to the directory above 'Data'
-            os.chdir('../')
+            #os.chdir('../')
+
+            #Open the files for viewing
+            os.system('open %s %s' %(f1,f2))
+
+          elif self.multi:
+
+            print 'plotting multi sections'
+            print self.multilist
+            print 'You probably want to reset the multilist now!'
 
           else:
               print 'Do not understand input slicetype'
@@ -175,6 +187,7 @@ class PointBrowser:
 
             self.previous_lines = []
             self.previous_points = []
+            self.multilist = []
 
           except:
 

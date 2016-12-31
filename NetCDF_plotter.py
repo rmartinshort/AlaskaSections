@@ -7,6 +7,11 @@ from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage import measure
+import os
+
+
+#For mapping
+from mpl_toolkits.basemap import Basemap, cm
 
 
 def plotgrd(ingrd,quakes,startlat=None,startlon=None,endlat=None,endlon=None):
@@ -37,15 +42,15 @@ def plotgrd(ingrd,quakes,startlat=None,startlon=None,endlat=None,endlon=None):
 	fig = plt.figure(facecolor='white',figsize=(10,6),frameon=True)
 	axobj = fig
 
-	ax = axobj.add_subplot(111)
-	image = ax.imshow(data, interpolation='nearest',aspect='auto',cmap=plt.cm.seismic_r,extent=[lengths[0],lengths[-1],-depths[-1],-depths[0]])
+	figax = axobj.add_subplot(111)
+	image = figax.imshow(data, interpolation='nearest',aspect='auto',cmap=plt.cm.seismic_r,extent=[lengths[0],lengths[-1],-depths[-1],-depths[0]])
 
 	#plot contours, with scaling to take into account the extent
 	for n, contour in enumerate(contours):
 		if n == 0:
-			ax.plot(xscale*contour[:, 1], dscale*contour[:, 0]+abs(min(depths)), 'r-', linewidth=2,label='contour at %g' %cval)
+			figax.plot(xscale*contour[:, 1], dscale*contour[:, 0]+abs(min(depths)), 'r-', linewidth=2,label='contour at %g' %cval)
 		else:
-			ax.plot(xscale*contour[:, 1], dscale*contour[:, 0]+abs(min(depths)), 'r-', linewidth=2)
+			figax.plot(xscale*contour[:, 1], dscale*contour[:, 0]+abs(min(depths)), 'r-', linewidth=2)
 
 	image.set_extent([lengths[0],lengths[-1],-depths[-1],-depths[0]])
 
@@ -62,13 +67,13 @@ def plotgrd(ingrd,quakes,startlat=None,startlon=None,endlat=None,endlon=None):
 		quakelens.append(vals[0])
 		quakedeps.append(abs(float(vals[1])))
 
-	ax.plot(quakelens,quakedeps,'k.')
+	figax.plot(quakelens,quakedeps,'k.')
 
 	#plot text for start and end coordinates 
 
-	ax.text(0, -20, 'Start: %g/%g' %(startlat,startlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
-	ax.text(lengths[-1]-50, -20, 'End: %g/%g' %(endlat,endlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
-	ax.text(lengths[-1]/2, -depths[0]-20, 'Contour at dv/v %g percent' %cval, style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+	figax.text(0, -20, 'Start: %g/%g' %(startlat,startlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+	figax.text(lengths[-1]-50, -20, 'End: %g/%g' %(endlat,endlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+	figax.text(lengths[-1]/2, -depths[0]-20, 'Contour at dv/v %g percent' %cval, style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
 
 	plt.gca().invert_yaxis()
 	plt.xlabel('Distance along profile [km]')
@@ -80,7 +85,35 @@ def plotgrd(ingrd,quakes,startlat=None,startlon=None,endlat=None,endlon=None):
 	colors = image.set_clim(-4,4)
 	axobj.colorbar(image,cbar_ax)
 
-	plt.show()
+	sectioname = 'Tomo_section_%.2f_%.2f_%.2f_%.2f.png' %(startlat,startlon,endlat,endlon)
+
+	fig.savefig(sectioname,dpi=200)
+
+
+	#Simple map with the section coordinates plotted on 
+	print 'Plotting section line on a map'
+
+	fig1 = plt.figure(facecolor='white',figsize=(10,6),frameon=True)
+	m = Basemap(width=2000000,height=1800000,resolution='l',projection='aea',lat_1=54.0,lat_2=69.0,lon_0=-146,lat_0=61)
+	m.shadedrelief()
+
+	p1 = np.arange(-90.,91.,5.)
+	m1 = np.arange(-180.,181.,10.)
+
+	m.drawparallels(p1,labels=[False,True,False,False])
+	m.drawmeridians(m1,labels=[False,False,False,True])
+
+	x,y = m([startlon,endlon],[startlat,endlat])
+	m.plot(x,y,'r-')
+
+	mapname = 'Section_line_%.2f_%.2f_%.2f_%.2f.png' %(startlat,startlon,endlat,endlon)
+
+	fig1.savefig(mapname,dpi=150)
+
+	return sectioname,mapname
+
+
+
 
 
 def main():
@@ -89,8 +122,6 @@ def main():
 	inquakes = 'Quakesdepth.gmt.dat'
 
 	plotgrd(inslice,inquakes,1,2,4,3)
-
-
 
 
 if __name__ == '__main__':
