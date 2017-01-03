@@ -71,8 +71,8 @@ def plotgrd(ingrd,quakes,startlat=None,startlon=None,endlat=None,endlon=None):
 
 	#plot text for start and end coordinates 
 
-	figax.text(0, -20, 'Start: %g/%g' %(startlat,startlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
-	figax.text(lengths[-1]-50, -20, 'End: %g/%g' %(endlat,endlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+	figax.text(0, -20, 'Start: %.2f/%.2f' %(startlat,startlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+	figax.text(lengths[-1]-50, -20, 'End: %.2f/%.2f' %(endlat,endlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
 	figax.text(lengths[-1]/2, -depths[0]-20, 'Contour at dv/v %g percent' %cval, style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
 
 	plt.gca().invert_yaxis()
@@ -95,7 +95,7 @@ def plotgrd(ingrd,quakes,startlat=None,startlon=None,endlat=None,endlon=None):
 
 	fig1 = plt.figure(facecolor='white',figsize=(10,6),frameon=True)
 	m = Basemap(width=2000000,height=1800000,resolution='l',projection='aea',lat_1=54.0,lat_2=69.0,lon_0=-146,lat_0=61)
-	m.shadedrelief()
+	m.fillcontinents()
 
 	p1 = np.arange(-90.,91.,5.)
 	m1 = np.arange(-180.,181.,10.)
@@ -105,6 +105,7 @@ def plotgrd(ingrd,quakes,startlat=None,startlon=None,endlat=None,endlon=None):
 
 	x,y = m([startlon,endlon],[startlat,endlat])
 	m.plot(x,y,'r-')
+	m.plot(x,y,'k.',markersize=10)
 
 	mapname = 'Section_line_%.2f_%.2f_%.2f_%.2f.png' %(startlat,startlon,endlat,endlon)
 

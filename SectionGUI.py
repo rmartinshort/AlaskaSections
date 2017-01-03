@@ -190,7 +190,7 @@ class SectionGUI(Frame):
 
 		self.plottype = 'Python'
 		self.sectiontype.set('Section type: Python')
-		Browse.addslicetype(self.plottype)
+		Browse.addslicetype(self.plottype,self.phasename)
 
 	def SetGMTSections(self):
 
@@ -199,7 +199,7 @@ class SectionGUI(Frame):
 		self.plottype = 'GMT'
 		self.segments = 'Single'
 		self.sectiontype.set('Section type: GMT, %s' %self.segments)
-		Browse.addslicetype(self.plottype)
+		Browse.addslicetype(self.plottype,self.phasename)
 
 	def SetSingleSections(self):
 
