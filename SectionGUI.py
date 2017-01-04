@@ -34,6 +34,7 @@ class SectionGUI(Frame):
         #tomography output text file that get sliced
 		self.mapgrdfile = "VEL.SLICE.150.try.sim.kernel.P.b13.75.50.iasp.grd"
 		self.dataset = "try.sim.kernel.P.b13.75.50.iasp"
+		self.phasename = 'P'
 
 		#-----------------------------------
 

@@ -103,12 +103,24 @@ class PointBrowser:
           if self.multi:
 
             #Create a series of .grd files for merging and then plotting
+
+            i = 1
+
             for element in self.multilist:
+
+              print element
 
               print 'Section: %g/%g to %g/%g' %(element[0],element[1],element[2],element[3])
 
-              os.system('extraction/ExtractionOnly.sh %s 4 P %g %g %g %g 600 N' %(self.datasetpath,element[0],element[1],element[2],element[4]))
+              os.system('extraction/ExtractionOnly.sh %s 4 P %g %g %g %g 600 N' %(self.datasetpath,element[0],element[2],element[1],element[3]))
 
+              os.system('mv Data/slice.grd Data/slice_%02d.grd' %i)
+
+              print '\n-------------------------------------\n'
+              print 'Generated slice "slice_%02d.grd"' %i
+              print '\n-------------------------------------\n'
+
+              i += 1
 
             print 'Resetting the multilist'
             self.multilist = []
