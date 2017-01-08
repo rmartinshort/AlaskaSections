@@ -3,7 +3,9 @@
 #Class for user interaction with Alaska section GUI
 import os
 import sys
+import glob
 import NetCDF_plotter as ncp
+import NetCDF_grouper as ncg
 
 class PointBrowser:
 
@@ -102,9 +104,22 @@ class PointBrowser:
 
           if self.multi:
 
+            #Remove all previously-made slices
+            os.system('rm Data/slice*.grd')
+
             #Create a series of .grd files for merging and then plotting
 
             i = 1
+
+            e1 = self.multilist[0]
+            e2 = self.multilist[-1]
+
+            #determine start and end lat/lon
+
+            self.startlat = e1[0]
+            self.startlon = e1[1]
+            self.endlat = e2[0]
+            self.endlon = e2[1]
 
             for element in self.multilist:
 
@@ -121,6 +136,19 @@ class PointBrowser:
               print '\n-------------------------------------\n'
 
               i += 1
+
+            grdfiles = glob.glob('Data/slice*.grd')
+
+            #Create a grouped ncfile from the series that has just been created
+            grouppednetcdf = ncg.groupfiles(grdfiles)
+
+            f1,f2 = ncp.plotgrd(grouppednetcdf,quakes=None,startlat=self.startlat,startlon=self.startlon,endlat=self.endlat,endlon=self.endlon)
+
+            #Move the images to the correct folder
+            os.system('mv %s %s images' %(f1,f2))
+
+            #Open the files for viewing
+            os.system('open images/%s images/%s' %(f1,f2))
 
             print 'Resetting the multilist'
             self.multilist = []

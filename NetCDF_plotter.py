@@ -14,7 +14,7 @@ import os
 from mpl_toolkits.basemap import Basemap, cm
 
 
-def plotgrd(ingrd,quakes,startlat=None,startlon=None,endlat=None,endlon=None):
+def plotgrd(ingrd,quakes=None,startlat=None,startlon=None,endlat=None,endlon=None):
 
 	'''Tool for python plotting of single tomo slice'''
 
@@ -54,25 +54,36 @@ def plotgrd(ingrd,quakes,startlat=None,startlon=None,endlat=None,endlon=None):
 
 	image.set_extent([lengths[0],lengths[-1],-depths[-1],-depths[0]])
 
-	#Obtain the earthquake information
-	quakesfile = open(quakes,'r')
-	lines = quakesfile.readlines()
-	quakesfile.close()
+	#Obtain the earthquake information, if given
 
-	quakelens = []
-	quakedeps = []
+	if quakes:
 
-	for line in lines:
-		vals = line.split()
-		quakelens.append(vals[0])
-		quakedeps.append(abs(float(vals[1])))
+		quakesfile = open(quakes,'r')
+		lines = quakesfile.readlines()
+		quakesfile.close()
 
-	figax.plot(quakelens,quakedeps,'k.')
+		quakelens = []
+		quakedeps = []
+
+		for line in lines:
+			vals = line.split()
+			quakelens.append(vals[0])
+			quakedeps.append(abs(float(vals[1])))
+
+		figax.plot(quakelens,quakedeps,'k.')
 
 	#plot text for start and end coordinates 
 
-	figax.text(0, -20, 'Start: %.2f/%.2f' %(startlat,startlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
-	figax.text(lengths[-1]-50, -20, 'End: %.2f/%.2f' %(endlat,endlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+	if startlat and startlon:
+
+		figax.text(0, -20, 'Start: %.2f/%.2f' %(startlat,startlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+		figax.text(lengths[-1]-50, -20, 'End: %.2f/%.2f' %(endlat,endlon), style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+
+	else:
+
+		print 'ERROR: no lat and lon arguments provided!'
+
+
 	figax.text(lengths[-1]/2, -depths[0]-20, 'Contour at dv/v %g percent' %cval, style='italic',bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
 
 	plt.gca().invert_yaxis()
