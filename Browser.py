@@ -2,6 +2,10 @@
 #RMS Dec 2016
 #Class for user interaction with Alaska section GUI
 import os
+import sys
+import glob
+import NetCDF_plotter as ncp
+import NetCDF_grouper as ncg
 
 class PointBrowser:
 
@@ -33,6 +37,14 @@ class PointBrowser:
       '''Add datset objects so that they can be plotted. This dataset must be within the Data directory'''
 
       self.datasetpath = datasetpath
+      
+    def addslicetype(self,slicetype,phasename):
+        
+      '''Add the slice type - python plotting or GMT plotting of the .grd file thy gets made by the slicing
+        tool '''
+        
+      self.slicetype = slicetype
+      self.phasename = phasename
 
     def motion(self,event):
 
@@ -68,10 +80,19 @@ class PointBrowser:
 
       if (self.profiledraw == True) or (self.line):
 
-        print '------------------------------'
-        print 'Start: %g/%g' %(self.startlat,self.startlon)
-        print 'End: %g/%g' %(self.endlat,self.endlon)
-        print '------------------------------'
+
+        if self.multi:
+
+          print '------------------------------'
+          print 'Multiple segment plotting'
+          print '------------------------------'
+
+        else:
+
+          print '------------------------------'
+          print 'Start: %g/%g' %(self.startlat,self.startlon)
+          print 'End: %g/%g' %(self.endlat,self.endlon)
+          print '------------------------------'
 
         #User to confirm that a profile is to be made 
         userprof = str(raw_input('Continue to make profile? [Y/N]: '))
@@ -79,8 +100,91 @@ class PointBrowser:
         if userprof == 'Y':
 
           print 'Generating profile'
-          print self.datasetpath 
-          os.system('extraction/SectionExtractor.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
+          print self.datasetpath
+
+          if self.multi:
+
+            #Remove all previously-made slices
+            os.system('rm Data/slice*.grd')
+
+            #Create a series of .grd files for merging and then plotting
+
+            i = 1
+
+            e1 = self.multilist[0]
+            e2 = self.multilist[-1]
+
+            #determine start and end lat/lon
+
+            self.startlat = e1[0]
+            self.startlon = e1[1]
+            self.endlat = e2[0]
+            self.endlon = e2[1]
+
+            for element in self.multilist:
+
+              print element
+
+              print 'Section: %g/%g to %g/%g' %(element[0],element[1],element[2],element[3])
+
+              os.system('extraction/ExtractionOnly.sh %s 4 P %g %g %g %g 600 N' %(self.datasetpath,element[0],element[2],element[1],element[3]))
+
+              os.system('mv Data/slice.grd Data/slice_%02d.grd' %i)
+
+              print '\n-------------------------------------\n'
+              print 'Generated slice "slice_%02d.grd"' %i
+              print '\n-------------------------------------\n'
+
+              i += 1
+
+            grdfiles = glob.glob('Data/slice*.grd')
+
+            #Create a grouped ncfile from the series that has just been created
+            grouppednetcdf = ncg.groupfiles(grdfiles)
+
+            f1,f2 = ncp.plotgrd(grouppednetcdf,quakes=None,startlat=self.startlat,startlon=self.startlon,endlat=self.endlat,endlon=self.endlon)
+
+            #Move the images to the correct folder
+            os.system('mv %s %s images' %(f1,f2))
+
+            #Open the files for viewing
+            os.system('open images/%s images/%s' %(f1,f2))
+
+            print 'Resetting the multilist'
+            self.multilist = []
+
+
+          else:
+          
+              if self.slicetype == "GMT":
+
+                 #GMT slicing tool
+                 os.system('extraction/SectionExtractor.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
+
+              elif self.slicetype ==  "Python":
+
+                #print self.startlat, self.startlon, self.endlat, self.endlon
+
+                os.system('extraction/ExtractionOnly.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
+
+                #We are now in the 'Data' directory, so can immediately go ahead and plot the python slice
+                f1, f2 = ncp.plotgrd('Data/slice.grd','Data/Quakesdepth.gmt.dat',self.startlat,self.startlon,self.endlat,self.endlon)
+
+                cwd = os.getcwd()
+                print cwd
+
+                #Return to the directory above 'Data'
+                #os.chdir('../')
+
+                #Move the images to the correct folder
+                os.system('mv %s %s images' %(f1,f2))
+
+                #Open the files for viewing
+                os.system('open images/%s images/%s' %(f1,f2))
+
+              else:
+                  print 'Do not understand input slicetype'
+                  sys.exit(1)
 
         else:
 
@@ -132,6 +236,7 @@ class PointBrowser:
       '''Define what happends when user presses a key - aim to stop the multi section drawing process'''
 
       print 'You pressed %s' %event.key
+      print 'Must press enter to remove lines drawn with multi-section tool selected'
 
       if event.key == 'enter':
 
@@ -148,6 +253,7 @@ class PointBrowser:
 
             self.previous_lines = []
             self.previous_points = []
+            self.multilist = []
 
           except:
 
@@ -209,6 +315,7 @@ class PointBrowser:
 
       if self.singlesectionflag == True:
         self.dragging = True
+        self.multi = None
       elif self.multisectionflag == True:
         self.dragging = True
         self.multi = True

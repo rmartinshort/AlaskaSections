@@ -34,6 +34,7 @@ class SectionGUI(Frame):
         #tomography output text file that get sliced
 		self.mapgrdfile = "VEL.SLICE.150.try.sim.kernel.P.b13.75.50.iasp.grd"
 		self.dataset = "try.sim.kernel.P.b13.75.50.iasp"
+		self.phasename = 'P'
 
 		#-----------------------------------
 
@@ -153,6 +154,13 @@ class SectionGUI(Frame):
 		Label(self,textvariable=self.sectiontype,bg='white',height=1,padx=0,pady=0,font='Helvetica 10 bold').grid(row=1,column=12,columnspan=1,sticky=W+E+S+N)
 		self.SetGMTSections()
 
+		# Add dataset label
+		self.datasetname = StringVar()
+		self.phasename = StringVar()
+		Label(self,textvariable=self.datasetname,bg='white',height=1,padx=0,pady=0,font='Helvetica 10 bold').grid(row=0,column=2,columnspan=1,sticky=W+E+S+N)
+		Label(self,textvariable=self.phasename,bg='white',height=1,padx=0,pady=0,font='Helvetica 10 bold').grid(row=1,column=2,columnspan=1,sticky=W+E+S+N)
+		self.Setdatasetname(self.dataset)
+
 		#Section creation buttons
 
 		Button(self, text='Start drawing',pady=0,padx=2,command=self.Startdrawing).grid(row=13,columnspan=2,column=2,sticky=W+E)
@@ -183,6 +191,7 @@ class SectionGUI(Frame):
 
 		self.plottype = 'Python'
 		self.sectiontype.set('Section type: Python')
+		Browse.addslicetype(self.plottype,self.phasename)
 
 	def SetGMTSections(self):
 
@@ -191,6 +200,7 @@ class SectionGUI(Frame):
 		self.plottype = 'GMT'
 		self.segments = 'Single'
 		self.sectiontype.set('Section type: GMT, %s' %self.segments)
+		Browse.addslicetype(self.plottype,self.phasename)
 
 	def SetSingleSections(self):
 
@@ -207,6 +217,22 @@ class SectionGUI(Frame):
 		self.segments = 'Multi'
 		self.sectiontype.set('Section type: %s, %s' %(self.plottype,self.segments))
 		Browse.multisection()
+
+	def Setdatasetname(self,name):
+
+		'''Set the name of the dataset that appears in the GUI'''
+
+		try:
+			nameparts = name.split('/')
+			name = nameparts[-1]
+		except:
+			pass
+
+		self.datasetname.set(name)
+
+		phase = name.split('.')
+		self.phasename.set('Phase: %s' %phase[3])
+
 
 	def Askfordataset(self):
 
@@ -225,6 +251,7 @@ class SectionGUI(Frame):
 
 		print 'Now slicing dataset %s' %self.dataset
 		Browse.adddataset(self.dataset)
+		self.Setdatasetname(self.dataset)
 
 		print '\n------------------------\n'
 
