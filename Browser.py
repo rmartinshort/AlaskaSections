@@ -127,7 +127,7 @@ class PointBrowser:
 
               print 'Section: %g/%g to %g/%g' %(element[0],element[1],element[2],element[3])
 
-              os.system('extraction/ExtractionOnly.sh %s 4 P %g %g %g %g 600 N' %(self.datasetpath,element[0],element[2],element[1],element[3]))
+              os.system('extraction/ExtractionOnly.sh %s 4 %s %g %g %g %g 600 N' %(self.datasetpath,self.phasename,element[0],element[2],element[1],element[3]))
 
               os.system('mv Data/slice.grd Data/slice_%02d.grd' %i)
 
@@ -159,13 +159,15 @@ class PointBrowser:
               if self.slicetype == "GMT":
 
                  #GMT slicing tool
-                 os.system('extraction/SectionExtractor.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
+                 print self.phasename, self.datasetpath
+                 os.system('extraction/SectionExtractor.sh %s 4 %s %g %g %g %g 600 %g' %(self.datasetpath,self.phasename,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
 
               elif self.slicetype ==  "Python":
 
                 #print self.startlat, self.startlon, self.endlat, self.endlon
+                print self.phasename
 
-                os.system('extraction/ExtractionOnly.sh %s 4 P %g %g %g %g 600 %g' %(self.datasetpath,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
+                os.system('extraction/ExtractionOnly.sh %s 4 %s %g %g %g %g 600 %g' %(self.datasetpath,self.phasename,self.startlat,self.endlat,self.startlon,self.endlon,4.0))
 
                 #We are now in the 'Data' directory, so can immediately go ahead and plot the python slice
                 f1, f2 = ncp.plotgrd('Data/slice.grd','Data/Quakesdepth.gmt.dat',self.startlat,self.startlon,self.endlat,self.endlon)

@@ -156,9 +156,9 @@ class SectionGUI(Frame):
 
 		# Add dataset label
 		self.datasetname = StringVar()
-		self.phasename = StringVar()
+		self.phasestring = StringVar()
 		Label(self,textvariable=self.datasetname,bg='white',height=1,padx=0,pady=0,font='Helvetica 10 bold').grid(row=0,column=2,columnspan=1,sticky=W+E+S+N)
-		Label(self,textvariable=self.phasename,bg='white',height=1,padx=0,pady=0,font='Helvetica 10 bold').grid(row=1,column=2,columnspan=1,sticky=W+E+S+N)
+		Label(self,textvariable=self.phasestring,bg='white',height=1,padx=0,pady=0,font='Helvetica 10 bold').grid(row=1,column=2,columnspan=1,sticky=W+E+S+N)
 		self.Setdatasetname(self.dataset)
 
 		#Section creation buttons
@@ -231,7 +231,13 @@ class SectionGUI(Frame):
 		self.datasetname.set(name)
 
 		phase = name.split('.')
-		self.phasename.set('Phase: %s' %phase[3])
+
+		#Set the phase string and update the Browse class so that is knows 
+		#what phase is being plotted
+
+		self.phasename = phase[3]
+		self.phasestring.set('Phase: %s' %self.phasename)
+		Browse.addslicetype(self.plottype,self.phasename)
 
 
 	def Askfordataset(self):
@@ -245,7 +251,7 @@ class SectionGUI(Frame):
 		filelocation = tkFileDialog.askopenfilename(initialdir='Data')
 		
 		self.olddataset = self.dataset
-		self.dataset = filelocation
+		self.dataset = filelocation.split('/')[-1]
 
 		print '\n------------------------\n'
 

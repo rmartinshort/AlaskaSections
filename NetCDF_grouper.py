@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#RMS Jan 2017
 #Tool for merging multiple netCDF files into one, ready for plotting
 
 import glob
