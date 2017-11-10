@@ -7,6 +7,8 @@ print 'Importing modules ...'
 from Tkinter import *
 import tkFileDialog
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 
 #Allow matplotlib to be used within a tkinter canvas
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg

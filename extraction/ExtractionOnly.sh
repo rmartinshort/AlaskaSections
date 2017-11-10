@@ -166,18 +166,18 @@ if [ $TYPE == 'CSTLAT' ]; then
   J=$Jkmkm
   frame=-BWSa200f50:Distance_[km]:/a200f50:Depth_[km]:
   Rslice=`awk '{print($5,-$3)}' slow.slice | $GMT minmax -I2`
-  awk '{print($5,-$3,$4)}' slow.slice | $GMT surface -Gslice.grd $Rslice -I2/2 -T0.1 -V
+  awk '{print($5,-$3,$4)}' slow.slice | $GMT surface -Gslice.grd $Rslice -I2/2 -T0.1
 
 elif [ $TYPE == 'CSTLON' ]; then
   J=$Jkmkm
   frame=-BWSa200f50:Distance_[km]:/a200f50:Depth_[km]:
   Rslice=`awk '{print($5,-$3)}' slow.slice | $GMT minmax -I2`
-  awk '{print($5,-$3,$4)}' slow.slice | $GMT surface -Gslice.grd $Rslice -I2/2 -T0.1 -V
+  awk '{print($5,-$3,$4)}' slow.slice | $GMT surface -Gslice.grd $Rslice -I2/2 -T0.1
 
 elif [ $TYPE == 'OBLIQUE' ]; then
   J=$Jkmkm
   frame=-BWSa200f50:Distance_[km]:/a200f50:Depth_[km]:
   Rslice=`awk '{print($5,-$3)}' slow.slice | $GMT minmax -I2`
-  awk '{print($5,-$3,$4)}' slow.slice | $GMT surface -Gslice.grd $Rslice -I2 -V -T0.1
+  awk '{print($5,-$3,$4)}' slow.slice | $GMT surface -Gslice.grd $Rslice -I2 -T0.1
 
 fi 

@@ -9,10 +9,10 @@ program sliceforplot2points
 	use transforms
 	use radial_models
 
-	implicit none 
+	implicit none
 
 	character (len=130) :: ia
-	integer :: idepth, ilon, ilon1, ilon2, ir 
+	integer :: idepth, ilon, ilon1, ilon2, ir,maxdepth
 	integer :: ii,jj,kk,inode,nxy,ivelin,ips,i,svindicator
 
 	double precision :: xrat, yrat, zrat, c1 ,c2 ,v1, v2 ,v3 ,v4 ,v5, v6 ,v7, v8
@@ -25,7 +25,7 @@ program sliceforplot2points
 
 	double precision :: x0,y0,z0,dx,dy,dz,dc,d2c,x,y,z,xlon,ylat,zrad
 
-	double precision :: slat,slon,rlat1,rlat2,rlat3,rlon1,rlon2,rlon3,maxdepth,sdepth,srad
+	double precision :: slat,slon,rlat1,rlat2,rlat3,rlon1,rlon2,rlon3,sdepth,srad
 
 	double precision :: pi, twopi, rpd, dpr, Rearth, rsurf, rn, rcmb, r660, r670, r400, alpha, beta, r0
 
@@ -61,7 +61,7 @@ program sliceforplot2points
 
 	if (ivelin.eq.-4) then
 		rcmb = 3482.0
-	else if (ivelin.ge.2) then 
+	else if (ivelin.ge.2) then
 		rcmb = 3479.5
 	else
 		rcmb = 3480.0
@@ -96,8 +96,8 @@ program sliceforplot2points
 
 	if (svindicator.eq.1) then
 		open(1,file='slow.slice')
-	
-	elseif (svindicator.eq.0) then 
+
+	elseif (svindicator.eq.0) then
 		open(1,file='vel.slice')
 
 	else
@@ -130,8 +130,18 @@ program sliceforplot2points
 		rlat2 = rlat3
 	end if
 
+	if ((rlon1-rlon2).eq.0) then
+		print *, 'Alert: This appears to be a a constant longitude slice!'
+		stop "Terminated. Use slice4plotting_latlon.f95 instead"
+	end if
+
 	alpha = (rlat1-rlat2)/(rlon1-rlon2)
 	beta = rlat1-alpha*rlon1
+
+	if (alpha.eq.0) then
+		print *, 'Alert: This appears to be a a constant latitude slice!'
+		stop "Terminated. Use slice4plotting_latlon.f95 instead"
+	end if 
 
 	ilon1=nint(rlon1*20)
 	ilon2=nint(rlon2*20)
@@ -144,10 +154,11 @@ program sliceforplot2points
 		else
 
 			 !Uses Haversine formula to accurately determine distances on the sphere
-			 dkm = 2*r0*asin(sqrt((sin((rlat1*(pi/180)-slat*(pi/180))/2)**2+cos(slat*(pi/180))*cos(rlat1*(pi/180))*sin((slon*(pi/180)-rlon1*(pi/180))/2)**2)))
+			 dkm = 2*r0*asin(sqrt((sin((rlat1*(pi/180)-slat*(pi/180))/2)**2+cos(slat*(pi/180))*&
+			 cos(rlat1*(pi/180))*sin((slon*(pi/180)-rlon1*(pi/180))/2)**2)))
 			 print *, 'Distance along profile: ', dkm
 
-		end if 
+		end if
 
 		do idepth=0,maxdepth,1
 
@@ -218,4 +229,3 @@ program sliceforplot2points
 
 
 end program sliceforplot2points
- 

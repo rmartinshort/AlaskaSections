@@ -1,4 +1,4 @@
-!RMS June 2016 
+!RMS June 2016
 
 !Extract a cross sectional slice through a tomographic model, ready for plotting with GMT
 !Rewrite of an f77 version to use dynamic memory allocation
@@ -13,7 +13,7 @@ program slicelatlon
 	implicit none
 
 	character (len=130) :: ia
-	integer :: idepth, ilon, ilon1, ilon2, ir, ilat1,ilat2,ilat
+	integer :: idepth, ilon, ilon1, ilon2, ir, ilat1,ilat2,ilat,maxdepth
 	integer :: ii,jj,kk,inode,nxy,ivelin,ips,i,svindicator
 
 	double precision :: xrat, yrat, zrat, c1 ,c2 ,v1, v2 ,v3 ,v4 ,v5, v6 ,v7, v8
@@ -26,7 +26,7 @@ program slicelatlon
 
 	double precision :: x0,y0,z0,dx,dy,dz,dc,d2c,x,y,z,xlon,ylat,zrad
 
-	double precision :: slat,slon,maxdepth,sdepth,srad
+	double precision :: slat,slon,sdepth,srad
 
 	double precision :: pi, twopi, rpd, dpr, Rearth, rsurf, rn, rcmb, r660, r670, r400, alpha, beta, r0
 
@@ -61,7 +61,7 @@ program slicelatlon
 
 	if (ivelin.eq.-4) then
 		rcmb = 3482.0
-	else if (ivelin.ge.2) then 
+	else if (ivelin.ge.2) then
 		rcmb = 3479.5
 	else
 		rcmb = 3480.0
@@ -96,8 +96,8 @@ program slicelatlon
 
 	if (svindicator.eq.1) then
 		open(1,file='slow.slice')
-	
-	elseif (svindicator.eq.0) then 
+
+	elseif (svindicator.eq.0) then
 		open(1,file='vel.slice')
 
 	else
@@ -125,7 +125,7 @@ program slicelatlon
 		slat=slat1
 		slat1=slat2
 		slat2=slat
-	endif 
+	endif
 
 	if (slon1.gt.slon2) then
 		slon=slon1
@@ -135,17 +135,17 @@ program slicelatlon
 
 	! Case where we're making a slice of constant latitude
 
-	if (slat1.eq.slat2) then 
+	if (slat1.eq.slat2) then
 
 		slat=slat1
 		ilon1=int(slon1*20)
 		ilon2=int(slon2*20)
 		print *, ' '
-		print *, "Constant slice at latitude : ",slat 
+		print *, "Constant slice at latitude : ",slat
 		print *, "Between longitudes",ilon1/20.0,ilon2/20.0
 		print *, ' '
 
-		!ilon1/10 is the first point, ilon2/10 is the last 
+		!ilon1/10 is the first point, ilon2/10 is the last
 
 		do ilon=ilon1,ilon2,1
 
@@ -155,10 +155,11 @@ program slicelatlon
 				dkm = 0.0
 			else
 
-			!Determine the distance along the profile using standard Haversine formula 
-			dkm = 2*r0*dasin(sqrt((dsin((slat*(pi/180)-slat*(pi/180))/2)**2 + dcos(slat*(pi/180))*dcos(slat1*(pi/180))*dsin((slon*(pi/180)-(ilon1/20)*(pi/180))/2)**2)))
-	 
-			endif 
+			!Determine the distance along the profile using standard Haversine formula
+			dkm = 2*r0*dasin(sqrt((dsin((slat*(pi/180)-slat*(pi/180))/2)**2 + dcos(slat*(pi/180))*&
+			dcos(slat1*(pi/180))*dsin((slon*(pi/180)-(ilon1/20)*(pi/180))/2)**2)))
+
+			endif
 
 			do idepth=0,maxdepth,1
 				sdepth=dble(idepth)
@@ -226,7 +227,7 @@ program slicelatlon
 		enddo
 
 	! Case where we're making a slice of constant longitude
-     
+
 	elseif (slon1.eq.slon2) then
 
 		slon=slon1
@@ -244,9 +245,11 @@ program slicelatlon
 
 			if (ilat.eq.ilat1) then
 				dkm = 0.0
-			else 
-				dkm = 2*r0*dasin(sqrt((dsin(((ilat1/20)*(pi/180)-slat*(pi/180))/2)**2 + dcos(slat*(pi/180))*dcos((ilat1/20)*(pi/180))*dsin((slon*(pi/180)-slon*(pi/180))/2)**2)))
-			endif 
+			else
+				dkm = 2*r0*dasin(sqrt((dsin((slat1*(pi/180)-slat*(pi/180))/2)**2 + &
+				dcos(slat*(pi/180))*dcos(slat1*(pi/180))*dsin((slon*(pi/180)-slon*(pi/180))/2)**2)))
+				print *, "Distance along profile: ", dkm
+			endif
 
 			do idepth=0,maxdepth,1
 
@@ -254,7 +257,7 @@ program slicelatlon
 
 				if (slon.lt.0.0) then
 					slon=360.0+slon
-				endif 
+				endif
 
 				call transform(trans,slon,slat,lon0,lat0,x,y,z,1)
 
@@ -281,7 +284,7 @@ program slicelatlon
 				zrad=z0+(dble(kk-1)*dz)+dz
 
 				call findr(rsurf,ivelin,zrad,ir)
-				call velo1(rn,rsurf,ivelin,ips,ir,zrad,c1,dc,d2c)
+				call velo1(rn,rsurf,ivelin,ips,ir,zrad,c2,dc,d2c)
 
 				v1=-1.0*slow(inode)*c1*100.0
 				v2=-1.0*slow(inode+1)*c1*100.0
